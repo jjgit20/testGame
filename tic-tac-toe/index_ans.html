@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>가변 그리드 AI 틱택토</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .controls {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* 보드 크기에 맞춰 동적으로 그리드 생성 */
+        .board {
+            display: grid;
+            gap: 5px;
+            background-color: #333;
+            padding: 5px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .cell {
+            background-color: #fff;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .cell:hover { background-color: #e9ecef; }
+        .cell.taken { cursor: not-allowed; }
+        .cell.win-highlight { background-color: #ffd700; color: #d32f2f; }
+
+        input[type="number"] {
+            width: 50px;
+            padding: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 8px 15px;
+            font-size: 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <h1>AI 틱택토</h1>
+    
+    <div class="controls">
+        <label for="gridSize">그리드 크기 (3~9): </label>
+        <input type="number" id="gridSize" min="3" max="9" value="3">
+        <button onclick="applySettings()">적용 및 재시작</button>
+    </div>
+
+    <div class="status" id="status">당신의 차례입니다 (X)</div>
+    <div class="board" id="board"></div>
+
+    <script>
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
+        const sizeInput = document.getElementById('gridSize');
+
+        let size = 3;
+        let winTarget = 3; 
+        let gameState = [];
+        let gameActive = true;
+        let isPlayerTurn = true; // true = Player(X), false = AI(O)
+
+        // 초기화 및 설정 적용
+        function applySettings() {
+            let inputSize = parseInt(sizeInput.value);
+            if (inputSize < 3) inputSize = 3;
+            if (inputSize > 9) inputSize = 9;
+            size = inputSize;
+            
+            // 4x4 이하는 보드 크기만큼, 5x5 이상은 5목으로 설정
+            winTarget = size >= 5 ? 5 : size; 
+
+            resetGame();
+        }
+
+        function resetGame() {
+            gameState = Array(size * size).fill("");
+            gameActive = true;
+            isPlayerTurn = true;
+            statusElement.innerText = `당신의 차례입니다 (X) - 승리조건: ${winTarget}목`;
+            
+            // 보드 UI 렌더링
+            boardElement.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            boardElement.innerHTML = '';
+            
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.setAttribute('data-index', i);
+                
+                // 폰트 크기 동적 조절 (칸이 많아지면 글씨를 줄임)
+                if (size > 5) cell.style.fontSize = '1.5rem';
+                
+                cell.addEventListener('click', handleCellClick);
+                boardElement.appendChild(cell);
+            }
+        }
+
+        function handleCellClick(e) {
+            const index = parseInt(e.target.getAttribute('data-index'));
+
+            if (gameState[index] !== "" || !gameActive || !isPlayerTurn) return;
+
+            makeMove(index, 'X');
+
+            if (gameActive) {
+                isPlayerTurn = false;
+                statusElement.innerText = "AI가 생각 중입니다... (O)";
+                setTimeout(makeAIMove, 400); // AI가 생각하는 듯한 딜레이 부여
+            }
+        }
+
+        function makeMove(index, player) {
+            gameState[index] = player;
+            const cell = boardElement.children[index];
+            cell.innerText = player;
+            cell.classList.add('taken');
+            
+            if (player === 'O') cell.style.color = '#dc3545'; // AI는 빨간색
+
+            checkResult(player);
+        }
+
+        // 승리 조건 검사 로직 (동적 그리드 대응)
+        function checkWinCondition(boardState, player) {
+            // 오른쪽, 아래, 오른쪽 아래 대각선, 왼쪽 아래 대각선
+            const directions = [[0, 1], [1, 0], [1, 1], [1, -1]]; 
+            
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    if (boardState[r * size + c] !== player) continue;
+
+                    for (let [dr, dc] of directions) {
+                        let count = 1;
+                        let winningCells = [r * size + c];
+
+                        for (let i = 1; i < winTarget; i++) {
+                            let nr = r + dr * i;
+                            let nc = c + dc * i;
+
+                            // 보드 범위를 벗어나거나 다른 플레이어의 돌이면 중단
+                            if (nr < 0 || nr >= size || nc < 0 || nc >= size) break;
+                            if (boardState[nr * size + nc] === player) {
+                                count++;
+                                winningCells.push(nr * size + nc);
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if (count === winTarget) {
+                            return winningCells; // 승리한 위치 배열 반환
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        function checkResult(player) {
+            const winningCells = checkWinCondition(gameState, player);
+
+            if (winningCells) {
+                statusElement.innerText = player === 'X' ? "축하합니다! 당신이 승리했습니다! 🎉" : "AI가 승리했습니다! 🤖";
+                winningCells.forEach(index => boardElement.children[index].classList.add('win-highlight'));
+                gameActive = false;
+                return;
+            }
+
+            if (!gameState.includes("")) {
+                statusElement.innerText = "무승부입니다! 🤝";
+                gameActive = false;
+                return;
+            }
+        }
+
+        // AI 로직 (휴리스틱 탐색)
+        function makeAIMove() {
+            if (!gameActive) return;
+
+            let emptyIndices = gameState.map((val, idx) => val === "" ? idx : null).filter(val => val !== null);
+            let bestMove = -1;
+
+            // 1. AI가 이번 수로 이길 수 있는지 확인 (공격)
+            for (let i of emptyIndices) {
+                gameState[i] = 'O';
+                if (checkWinCondition(gameState, 'O')) {
+                    bestMove = i;
+                }
+                gameState[i] = ""; // 원상복구
+                if (bestMove !== -1) break;
+            }
+
+            // 2. 플레이어가 다음 수로 이기는 것을 방어 (수비)
+            if (bestMove === -1) {
+                for (let i of emptyIndices) {
+                    gameState[i] = 'X';
+                    if (checkWinCondition(gameState, 'X')) {
+                        bestMove = i;
+                    }
+                    gameState[i] = ""; // 원상복구
+                    if (bestMove !== -1) break;
+                }
+            }
+
+            // 3. 중앙 선점 또는 빈칸 중 무작위 선택
+            if (bestMove === -1) {
+                const center = Math.floor((size * size) / 2);
+                if (gameState[center] === "") {
+                    bestMove = center;
+                } else {
+                    bestMove = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                }
+            }
+
+            makeMove(bestMove, 'O');
+
+            if (gameActive) {
+                isPlayerTurn = true;
+                statusElement.innerText = `당신의 차례입니다 (X) - 승리조건: ${winTarget}목`;
+            }
+        }
+
+        // 초기 실행
+        applySettings();
+    </script>
+</body>
+</html>
