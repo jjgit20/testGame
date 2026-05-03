@@ -1,0 +1,38 @@
+body {
+    background-color: #2c3e50;
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+}
+.ui {
+    color: #ecf0f1;
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    outline: none;
+}
+.ui input {
+    font-size: 32px; /* 텍스트 크기와 동일하게 */
+    font-weight: bold;
+    width: 80px;    /* 입력창 너비 (적절히 조절 가능) */
+    height: 40px;   /* 32px 폰트가 여유 있게 들어갈 높이 */
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    outline: none;
+}
+.ui button:hover {
+    background-color: #2980b9;
+}
+.status {
+    color: #f1c40f;
+    font-size: 24px;
+    font-weight: bold;
+}
