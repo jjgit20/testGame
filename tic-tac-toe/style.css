@@ -13,26 +13,64 @@ body {
     font-size: 32px;
     font-weight: bold;
     margin-bottom: 20px;
-    border-radius: 5px;
-    border: none;
-    text-align: center;
-    outline: none;
+    display: flex;
+    align-items: center; 
+    gap: 10px; /* 요소들 사이의 간격 */
 }
 .ui input {
-    font-size: 32px; /* 텍스트 크기와 동일하게 */
-    font-weight: bold;
-    width: 80px;    /* 입력창 너비 (적절히 조절 가능) */
+    font-size: 28px; /* 텍스트 크기와 동일하게 */
     height: 40px;   /* 32px 폰트가 여유 있게 들어갈 높이 */
     border-radius: 5px;
     border: none;
     text-align: center;
     outline: none;
 }
+.ui button {
+    background-color: #ffffff;
+    font-size: 16px;
+    height: 42px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    outline: none;
+}
 .ui button:hover {
-    background-color: #2980b9;
+    background-color: #007bff;
 }
 .status {
     color: #f1c40f;
     font-size: 24px;
     font-weight: bold;
+    margin-bottom: 20px;
+}
+.board {
+    display: grid;
+    gap: 6px;
+    background-color: #000000;
+    padding: 8px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.7);
+}
+.cell {
+    background-color: #fff;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* font-size: 2rem; */
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.cell:hover {
+    background-color: #e9ecef;
+}
+.cell.taken {
+    cursor: not-allowed;
+}
+.cell.win-highlight {
+    background-color: #ffd700;
+    color: #d32f2f;
 }
