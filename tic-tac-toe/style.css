@@ -36,7 +36,32 @@ body {
 }
 .ui button:hover {
     background-color: #007bff;
+    color: white;
 }
+.ui button:active {  /* :active 버튼을 누를 때 일시적으로 적용되는 스타일/
+    background-color: #0056b3;
+    color: white;
+    /* font-weight: bold; */
+    font-size: 16px;
+    height: 40px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    outline: none;
+}
+/* 이건 우리가 자바스크립트로 고정시킬 '상태'의 스타일 */
+.ui button.active {  /* :active가 아니라 .active 입니다! */
+    background-color: #0056b3;
+    color: white;
+    /* font-weight: bold; */
+    font-size: 16px;
+    height: 40px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    outline: none;
+}
+
 .status {
     color: #f1c40f;
     font-size: 24px;

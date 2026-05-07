@@ -1,20 +1,19 @@
 const gridSize = document.getElementById("gridSize")
 const turn = document.getElementById("turn");
 const board = document.getElementById("board");
+const selectedUnit = document.getElementById("selectedUnit");
+const btnPlayer = document.getElementById("btnPlayer");
+const btnComputer = document.getElementById("btnComputer");
+
+btnPlayer.classList.add('active');
 
 let size = 3;
 let gameActive = true;
-let playersTurn = true; // 'Player'
-// let playerColor = (currTurn == 'Player' ? 'O' : 'X');
+let isPlayerTurn = true; // 'Player'
 let statusArr = [];
 let cellElements = [];
 
-// let xP = 0;
-// let yP = 0;
 let indexP = 0;
-
-// let xC = 0;
-// let yC = 0;
 let indexC = 0;
 
 // function checkWin(who, size)
@@ -27,13 +26,25 @@ let indexC = 0;
 function start() {
     let inputSize = parseInt(gridSize.value);
     size = inputSize;
+    statusArr = [];
     for(let i = 0; i < size*size; ++i) statusArr.push('');
 
     resetGame();
 }
 
+function setPlayer(choice) {
+    selectedUnit.value = choice;
+
+    if (choice === 'Player') {
+        btnPlayer.classList.add('active');
+        btnComputer.classList.remove('active');
+    } else {
+        btnComputer.classList.add('active');
+        btnPlayer.classList.remove('active');
+    }
+}
+
 function resetGame() {
-    // 보드 UI 렌더링
     board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
     board.style.gridTemplateRows = `repeat(${size}, 1fr)`;
     board.innerHTML = '';
@@ -57,28 +68,48 @@ function resetGame() {
     board.addEventListener('click', (e) => {
         if (e.target.classList.contains('cell')) {
             const index = e.target.getAttribute('data-index');
-            playerInput(index);
+            playerTurn(index);
         }
     });
+
+    if(selectedUnit.value === 'Computer') aiTurn();
 }
 
-function playerInput(index) {
-    if(statusArr[index] === '' && gameActive && playersTurn) {
-        playersTurn = false;
-        indexP = index;
-        updateCellText(index, 'O');
-        updateTurnText(playersTurn);
-    }
+function playerTurn(index) {
+    if (gameState[index] !== "" || !gameActive || !isPlayerTurn) return;
+
+    statusArr[index] = 'O';
+    cellElements[index].innerText = 'O';
+    isPlayerTurn = false;
+    turn.innerText = 'Computer';
+    indexP = index;
+
+    if(checkWin('Player')) gameFin('Player');
+    else if (!gameState.includes("")) gameFin('None');
+    else aiTurn();
+    
     return;
 }
 
-function updateCellText(index, playerColor) {
-    statusArr[index] = playerColor;
-    cellElements[index].innerText = playerColor;
+function aiTurn() {
+    if (!gameActive || isPlayerTurn) return;
+
+    if(checkWin('Computer')) gameFin('Computer');
+    else if (!gameState.includes("")) gameFin('None');
+
+    return;
 }
 
-function updateTurnText(playersTurn) {
-    turn.innerText = (playersTurn ? 'Player' : 'Computer');
+function gameFin(unit) {
+    if(unit === 'None') statusElement.innerText = "무승부입니다! 🤝";
+    else {
+        winningCells.forEach(index => boardElement.children[index].classList.add('win-highlight'));
+        statusElement.innerText = (unit === 'Player' ? "축하합니다! 당신이 승리했습니다! 🎉" : "AI가 승리했습니다! 🤖");
+    }
+    
+    gameActive = false;
+
+    return;
 }
 
 function getLinesThrough(index, playerColor) {
@@ -130,7 +161,7 @@ function getLineOnAxis(startX, startY, dx, dy, playerColor) {
     return line; 
 }
 
-function checkWinner() {
+function checkPlayerWin() {
     let playerColor = (currTurn == 'Player' ? 'O' : 'X');
     const [bestIdx, bestScore] = getLinesThrough(lastMoveIndex, playerColor);
 
@@ -142,11 +173,13 @@ function checkWinner() {
     return 'none';
 }
 
-function aiAlgorithm() {
-    if(!playersTurn && gameActive) {
-        playersTurn = true;
-    }
+function gameStateUpdate(gameState) {
+    gameActive = gameState;
+
+    if()
 }
+
+
 
 
 

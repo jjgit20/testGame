@@ -9,6 +9,20 @@
         <div class="ui">
             <label>Grid Size: </label>
             <input type="number" id="gridSize" min="3" max="9" value="3">
+        </div>
+        <div class="ui">
+            <label>Starting Player: </label>
+            <!-- <select id="startPlayer">
+                <option value="Player">Player</option>
+                <option value="Computer">Computer</option>
+            </select> -->
+            <div class="startingUnit">
+                <button type="button" id="btnPlayer" onclick="setPlayer('Player')">Player</button>
+                <button type="button" id="btnComputer" onclick="setPlayer('Computer')">Computer</button>
+                <input type="hidden" id="selectedUnit" value="Player">
+            </div>
+        </div>
+        <div class="ui">
             <button onclick="start()">Apply and Restart</button>
         </div>
         <div class="status" id="status">
